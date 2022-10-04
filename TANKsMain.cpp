@@ -1,18 +1,19 @@
 # Tanks
-//TANKS
+//TANKS for HELENA))
+//--------------------------- Необходимые модули
 #include <iostream>
 #include <cstring>
-#include <windows.h>
+#include <windows.h>          // Подключаем сишную - оконную библиотеку за неимением таковой в С++, да - так тоже можно!
 #include <ctime>
 //----------------------------
-using namespace::std;
+using namespace::std;        // Тянем за собой всю простыню из пространства имён std
 
 
-//----------------------------
-#define width 80
-#define height 25
+//---------------------------- СОздаём карту в символах
+#define width 80              // Размер консольного окна в символах ШИРИНА 80
+#define height 25             // Размер консольного окна в символах ВЫСОТА 25
 
-#define field ' '
+#define field ' '            // Символы для карты ПРОБЕЛ - то чем будет заполнена вся карта
 #define fbrick 176
 #define fstone 206
 
@@ -22,9 +23,9 @@ using namespace::std;
 #define catter '#'
 
 //----------------------------
-typedef char hwmap [height][width];
+typedef char hwmap [height][width]; // ТИП ДАННЫХ ДЛЯ САМОЙ КАРТЫ!
 //----------------------------
-void SetCurPos(int x, int y)
+void SetCurPos(int x, int y)       // Функция установки положения курсорва консоли!!!
 {
     COORD coord;
     coord.X = x;
@@ -33,84 +34,84 @@ void SetCurPos(int x, int y)
 
 
 };
-struct tMap
+struct tMap               // Простая структура для управления картой
 {
-    hwmap map;
-    void Clr()
+    hwmap map;            // Объект карта (сама карта которую мы будем вызывать в соответствующей функции ДЛЯ ПРОРИСОВКИ НА КОНСОЛИ
+    void Clr()            // Функция очистки и заполнения экрана
     {
-        memset(map, field, sizeof(map)-1);
+        memset(map, field, sizeof(map)-1);   // Заполняем карту с помощью сивмовла field, который равняется пробелу, мы объявляем его на 16 ой строчке!
     };
     void SetEnd()
     {
-        map[height - 1][width-1] = '\0';
+        map[height - 1][width-1] = '\0';    // Ставит в конец строки массива терминирующий ноль '\0'
     };
-    void Show()
+    void Show()                            // Показывает всю карту в консоли
     {
-        SetCurPos(0,0);
-        SetEnd();
-        cout <<map[0];
+        SetCurPos(0,0);                    // Изначальное положение строки массива 
+        SetEnd();                          // Добавляем терминирующий ноль в каждую строку массива по очерёдно с верху в низ, что бы карта отобразилась в консоли, ведь мы пишем карту без оболочки SFML
+        cout <<map[0];                     // Собственно поток вывода на консоль
     };
 
 
 };
-enum Tdir {Runn = 0, Rdown, Rleft, Rright};
-POINT dirInc[] = {{0,-1}, {0,1}, {-1,0}, {1,0}};
+enum Tdir {Runn = 0, Rdown, Rleft, Rright}; // ставим перечисление, enum - перечисление, которое просто, хранит в себе направление танка
+POINT dirInc[] = {{0,-1}, {0,1}, {-1,0}, {1,0}}; // Массив который хранит изменения координат при движение, по направлению которые фиксируются в Tdir
 
-class Ttank
+class Ttank  // Класс ТАНК! УРАААААААА!!!!!!!!!! ОН ЖИВОООЙ ЖИВОООООЙ!
 {
-    int x, y;
+    int x, y;  // Заводим координаты для движения
     int sX, sY;
 public:
-    Tdir dir;
-    Ttank(int startX, int startY)
+    Tdir dir; // Куда смотрит наш танк в каждый промежуток времени
+    Ttank(int startX, int startY)  // Стартовые координаты каждого танка
     {
-        dir = Runn;
-        sX = startX;
-        sY = startY;
-        SetToStart();
+        dir = Runn; // Танк изначально смотрит в верх!
+        sX = startX; // Стартовые координаты Х
+        sY = startY; // Стартовые координаты У
+        SetToStart(); // ВОзвращение танка в точку спавна! 
     };
-    void Show(hwmap &map);
-    void Move(char w, char s, char a, char d, char fire);
+    void Show(hwmap &map);   // Объявляем метод показа карты!
+    void Move(char w, char s, char a, char d, char fire); // Объявляем метод управления танком
     void SetToStart()
     {
         x = sX; y = sY;
     };
-    bool IsHoriz() {return (dir == Rright || dir == Rleft);}
-    RECT GetRect() {RECT r = {x - 1, y - 1, x + 1, y + 1}; return r;}
+    bool IsHoriz() {return (dir == Rright || dir == Rleft);} // Эта функция проверяет смотрит ли танк по горизонтали
+    RECT GetRect() {RECT r = {x - 1, y - 1, x + 1, y + 1}; return r;} // При движение в право У - увеличивается на единицу, при движение в ливо Х - увеличивается на еденицу
 
 };
 
 
-tMap scr;
-Ttank tank(40,11);
+tMap scr; // Задаём объект "карта"
+Ttank tank(40,11); // Сам танк
 
 
-void Ttank::Show(hwmap &map)
+void Ttank::Show(hwmap &map) // Реализация метода отрисовки карты, на вход мы получаем ссылку на карту на которой будем рисовать!
 {
     if(IsHoriz())
-        for (int i = -1; i < 2; map[y + 1][x - i] = map[y + 1][x + i] = catter, i++);
+        for (int i = -1; i < 2; map[y + 1][x - i] = map[y + 1][x + i] = catter, i++); // Если ТАНК устал и прилёг - рисуем гусеницы горизонтально!
     else
-        for (int i = -1; i < 2; map[y - i][x - 1] = map[y + i][x + 1] = catter, i++);
-    map[y][x] = TANKC;
-    POINT dt = dirInc[dir];
-    map[y + dt.y][x + dt.x] = IsHoriz() ? DULOh : DULOv;
+        for (int i = -1; i < 2; map[y - i][x - 1] = map[y + i][x + 1] = catter, i++); // И наче вертикально
+    map[y][x] = TANKC;     // В центре ресуем корпус танка!
+    POINT dt = dirInc[dir]; // По направлению dir ВЫБИРАЕМ СМЕЩЕНИЕ (тут может залагать)
+    map[y + dt.y][x + dt.x] = IsHoriz() ? DULOh : DULOv; // Рисуем дуло танка! Положение дула выбирается в зависимости от положения танка
 }
-RECT area = {2,2, width - 3, height - 3};
+RECT area = {2,2, width - 3, height - 3};                  // Функция проверки пересечения двух прясмоугольников!
 void Ttank::Move(char w, char s, char a, char d, char fire)
 {
     char wsad[4] = {w, s, a, d};
     for (int i= 0; i < 4; i++)
-        if (GetKeyState(wsad[i]) < 0) dir = (Tdir)i;
-    POINT pt = dirInc[dir];
-    Ttank old = *this;
+        if (GetKeyState(wsad[i]) < 0) dir = (Tdir)i; // Заводим зависимость от нажатия соответствующего символа
+    POINT pt = dirInc[dir]; // Помещаем в точку направление
+    Ttank old = *this; // Прверка состояния танка "ЖИВ\НЕТ"
     x += pt.x;
     y += pt.y;
     /*if(!IsCross(area, GetRect()))
-        *this = old;*/
+        *this = old;*/                 // Проверка не вылез ли танк за карту, но она чё то не работает, хотя, в принципе тут ничего не работает........
 
 }
 
-int main()
+int main()   // Главная функция
 {
     do
     {
@@ -123,11 +124,11 @@ int main()
       scr.Show();
 
     }
-    while (GetKeyState(VK_ESCAPE) >= 0);
+    while (GetKeyState(VK_ESCAPE) >= 0); // Функция "ЦИКЛ ИГРЫ"
 
 
 
 
 
-    return 0;
+    return 0;  // ВЫХОДИМ ИЗ ПРОГРАММЫ
 }
